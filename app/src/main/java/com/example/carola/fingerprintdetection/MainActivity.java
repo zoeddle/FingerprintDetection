@@ -23,9 +23,11 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -126,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
                         ActivityCompat.requestPermissions(MainActivity.this, permissions, ASK_MULTIPLE_PERMISSION_REQUEST_CODE);
                     }
                     else {
-                        makeAndDrawNode();
+                        //makeAndDrawNode();
                     }
 
 //                    if (checkPermissions()) {
@@ -188,19 +190,19 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     private void makeAndDrawNode() {
 
         //add a node to xml file
-        Node test = new Node(x,y,String.valueOf(countNode), null);
+        Node test = new Node(x,y,String.valueOf(countNode),"bla", null);
         countNode++;
 
         if(positionManager != null){
             xmlPersistenceManager.addNodeData(test);
             positionManager.map(test.name);
+            drawNode(x, y);
         }
         else {
             initializePositioning();
             return;
         }
 
-        drawNode(x,y);
     }
     private void drawNode(float x, float y){
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -225,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     }
 
     private void initializePositioning() {
-        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "positioningPersistenceHTW.xml");
+        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "positioningPersistenceHTWog6.xml");
 
         try {
             //positionManager = new PositionManager(file);
@@ -234,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             Log.d("positionManager", "initialized");
             List<String> positions = positionManager.getMappedPositions();
             if (positions != null){
-                List<Node> actuallyNodes = new ArrayList<>();
+                List<Node> actuallyNodes = new ArrayList<Node>();
                 for(String nodeName : positions) {
                     Node nodeToAdd = xmlPersistenceManager.getNodeData(nodeName);
                     actuallyNodes.add(nodeToAdd);
@@ -242,6 +244,17 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
                 for(int i = 0; i<actuallyNodes.size(); i++){
                     drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
                 }
+
+//                ArrayAdapter adapter = new ArrayAdapter<Node>(this, R.layout.activity_listview,R.id.tv_listItem, actuallyNodes);
+//
+//                ListView listView = (ListView) findViewById(R.id.lv_nodes);
+//                listView.setAdapter(adapter);
+
+
+                NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
+
+                ListView listView = (ListView) findViewById(R.id.lv_nodes);
+                listView.setAdapter(adapter);
             }
         } catch (PositioningPersistenceException e) {
             e.printStackTrace();
@@ -256,26 +269,26 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 //        keyWhiteList.add("e8:37:7a:1a:56:5b".toLowerCase());
 //        keyWhiteList.add("34:81:c4:c7:46:50".toLowerCase());
         //whiteList zuHause
-//        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
-//        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
-//        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
+        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
+        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
+        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
         //whiteList HTW
-        keyWhiteList.add("00:19:07:c4:91:51".toLowerCase());
-        keyWhiteList.add("00:19:07:97:63:81".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:8f:b1".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9a:71".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9d:61".toLowerCase());
-        keyWhiteList.add("00:19:07:97:fb:81".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9e:d1".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:99:81".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9b:01".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9e:d1".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:99:91".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9e:71".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9f:e1".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:9d:a1".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:8f:01".toLowerCase());
-        keyWhiteList.add("00:19:07:c4:8d:b1".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:91:51".toLowerCase());
+//        keyWhiteList.add("00:19:07:97:63:81".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:8f:b1".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9a:71".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9d:61".toLowerCase());
+//        keyWhiteList.add("00:19:07:97:fb:81".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9e:d1".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:99:81".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9b:01".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9e:d1".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:99:91".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9e:71".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9f:e1".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:9d:a1".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:8f:01".toLowerCase());
+//        keyWhiteList.add("00:19:07:c4:8d:b1".toLowerCase());
         Technology wifiTechnology = new WifiTechnology(this, "WIFI", keyWhiteList);
 
         try {

@@ -105,6 +105,7 @@ public class NewXMLPersistenceManager implements PersistenceManager{
                 Node tempNode = nodeData.get(positionInformation.getName());
                 fingerPrint = new Element("fingerPrint");
                 fingerPrint.setAttribute("name", positionInformation.getName());
+                fingerPrint.setAttribute("searchName", tempNode.searchName);
                 fingerPrint.setAttribute("x", String.valueOf(tempNode.x));
                 fingerPrint.setAttribute("y", String.valueOf(tempNode.y));
                 root.addContent(fingerPrint);
@@ -252,6 +253,6 @@ public class NewXMLPersistenceManager implements PersistenceManager{
     protected Node createNodeFromElement(Element fingerPrint){
         float x = Float.parseFloat(fingerPrint.getAttributeValue("x"));
         float y = Float.parseFloat(fingerPrint.getAttributeValue("y"));
-        return new Node(x,y,fingerPrint.getAttributeValue("name"),null);
+        return new Node(x,y,fingerPrint.getAttributeValue("name"),fingerPrint.getAttributeValue("searchName"),null);
     }
 }
