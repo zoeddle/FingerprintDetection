@@ -23,6 +23,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,9 +31,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     private PositionManager positionManager;
     private NewXMLPersistenceManager xmlPersistenceManager;
     private ImageView image;
+    private ListView listView;
     private Bitmap bitmap;
     private Bitmap mutableBitmap;
     private Canvas canvas;
@@ -67,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
         final Button startScanButton = (Button) findViewById(R.id.b_startScann);
         final Button stoppScanButton = (Button) findViewById(R.id.b_stoppScan);
+        listView = (ListView) findViewById(R.id.lv_nodes);
 
         mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -95,6 +103,24 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         stoppScanButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 positionManager.stopPositioning();
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+
+                Node clickedNode = (Node) listView.getItemAtPosition(position);
+                if(positionManager != null){
+                    xmlPersistenceManager.addNodeData(clickedNode);
+                    positionManager.map(clickedNode.name);
+                    drawRecievedNode(clickedNode.x, clickedNode.y);
+                }
+                else {
+                    initializePositioning();
+                    return;
+                }
             }
         });
 
@@ -133,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 
 //                    if (checkPermissions()) {
 //                        //  permissions  granted.
-//                        madAndDrawNode();
+//                        makeAndDrawNode();
 //                    }
 //                    else{
 //                        new AlertDialog.Builder(MainActivity.this)
@@ -228,34 +254,70 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 
     private void initializePositioning() {
         File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "positioningPersistenceHTWog6.xml");
+        //File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "og6Information.xml");
+
+
+        String json = null;
+        try {
+            InputStream is = this.getAssets().open("og6InformationJson.txt");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+
+            JSONObject  jsonRootObject = new JSONObject(json);
+
+            //Get the instance of JSONArray that contains JSONObjects
+            JSONArray jsonArray = jsonRootObject.optJSONArray("nodePoints");
+
+            List<Node> actuallyNodes = new ArrayList<Node>();
+
+            //Iterate the jsonArray and print the info of JSONObjects
+            for(int i=0; i < jsonArray.length(); i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                String name = jsonObject.optString("name").toString();
+                String searchname = jsonObject.optString("searchName").toString();
+                float x = Float.parseFloat(jsonObject.optString("x").toString());
+                float y = Float.parseFloat(jsonObject.optString("y").toString());
+                actuallyNodes.add(new Node(x,y,name,searchname,null));
+            }
+
+            for(int i = 0; i<actuallyNodes.size(); i++){
+                drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
+            }
+
+            NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
+
+            listView.setAdapter(adapter);
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         try {
-            //positionManager = new PositionManager(file);
             xmlPersistenceManager = new NewXMLPersistenceManager(file);
             positionManager = new PositionManager(xmlPersistenceManager);
             Log.d("positionManager", "initialized");
-            List<String> positions = positionManager.getMappedPositions();
-            if (positions != null){
-                List<Node> actuallyNodes = new ArrayList<Node>();
-                for(String nodeName : positions) {
-                    Node nodeToAdd = xmlPersistenceManager.getNodeData(nodeName);
-                    actuallyNodes.add(nodeToAdd);
-                }
-                for(int i = 0; i<actuallyNodes.size(); i++){
-                    drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
-                }
-
-//                ArrayAdapter adapter = new ArrayAdapter<Node>(this, R.layout.activity_listview,R.id.tv_listItem, actuallyNodes);
+//            List<String> positions = positionManager.getMappedPositions();
+//            if (positions != null){
+//                List<Node> actuallyNodes = new ArrayList<Node>();
+//                for(String nodeName : positions) {
+//                    Node nodeToAdd = xmlPersistenceManager.getNodeData(nodeName);
+//                    actuallyNodes.add(nodeToAdd);
+//                }
+//                for(int i = 0; i<actuallyNodes.size(); i++){
+//                    drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
+//                }
+//
+//                NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
 //
 //                ListView listView = (ListView) findViewById(R.id.lv_nodes);
 //                listView.setAdapter(adapter);
-
-
-                NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
-
-                ListView listView = (ListView) findViewById(R.id.lv_nodes);
-                listView.setAdapter(adapter);
-            }
+//            }
         } catch (PositioningPersistenceException e) {
             e.printStackTrace();
         }
