@@ -18,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -39,7 +40,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -256,8 +260,11 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     }
 
     private void initializePositioning() {
+        Calendar calender = Calendar.getInstance();
+        SimpleDateFormat strFormat = new SimpleDateFormat("yyyy-MM-dd HH");
+        String strDate = strFormat.format(calender.getTime());
         //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "myHome2.xml");
-        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "og6Information.xml");
+        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), strDate+" og6Information.xml");
 
         findNodesFromJson();
 
