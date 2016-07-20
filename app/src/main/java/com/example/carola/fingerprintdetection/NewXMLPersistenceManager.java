@@ -234,11 +234,12 @@ public class NewXMLPersistenceManager implements PersistenceManager{
 
     protected void addNeighbours(Element fingerPrint, Node nodeForNeighbours) {
         Element neighbours = new Element("neighbours");
-        Element neighbourElement = new Element("neighbour");
+
         ArrayList<String> neighboursList = (ArrayList<String>)nodeForNeighbours.neighbours;
         for (int i = 0; i <neighboursList .size(); i++){
-        neighbourElement.setAttribute("name", neighboursList.get(i));
-        neighbours.addContent(neighbourElement);
+            Element neighbourElement = new Element("neighbour");
+            neighbourElement.setAttribute("name", neighboursList.get(i));
+            neighbours.addContent(neighbourElement);
         }
 
         fingerPrint.addContent(neighbours);
