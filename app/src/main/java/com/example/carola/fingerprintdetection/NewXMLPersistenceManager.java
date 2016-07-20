@@ -1,5 +1,6 @@
 package com.example.carola.fingerprintdetection;
 
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
 
 import de.hadizadeh.positioning.exceptions.PositioningPersistenceException;
 import de.hadizadeh.positioning.model.PositionInformation;
@@ -61,7 +63,7 @@ public class NewXMLPersistenceManager implements PersistenceManager{
 
                 String technologyName;
                 HashMap signalInformationData;
-                for(Iterator i$1 = fingerPrint.getChildren().iterator(); i$1.hasNext();
+                for(Iterator i$1 = fingerPrint.getChild("technology").getChildren().iterator(); i$1.hasNext();
                     ((List)positionInformation.get(technologyName)).add(new PositionInformation(fingerPrint.getAttributeValue("name"), signalInformationData))) {
                     Element technology = (Element)i$1.next();
                     technologyName = technology.getAttributeValue("name");
@@ -109,6 +111,7 @@ public class NewXMLPersistenceManager implements PersistenceManager{
                 fingerPrint.setAttribute("x", String.valueOf(tempNode.x));
                 fingerPrint.setAttribute("y", String.valueOf(tempNode.y));
                 root.addContent(fingerPrint);
+                this.addNeighbours(fingerPrint,tempNode);
             }
 
             this.addFingerPrint(fingerPrint, technologyName, positionInformation);
@@ -229,6 +232,18 @@ public class NewXMLPersistenceManager implements PersistenceManager{
         fingerPrint.addContent(technology);
     }
 
+    protected void addNeighbours(Element fingerPrint, Node nodeForNeighbours) {
+        Element neighbours = new Element("neighbours");
+        Element neighbourElement = new Element("neighbour");
+        ArrayList<String> neighboursList = (ArrayList<String>)nodeForNeighbours.neighbours;
+        for (int i = 0; i <neighboursList .size(); i++){
+        neighbourElement.setAttribute("name", neighboursList.get(i));
+        neighbours.addContent(neighbourElement);
+        }
+
+        fingerPrint.addContent(neighbours);
+    }
+
     protected Document open() throws JDOMException, IOException {
         return this.saxBuilder.build(this.persistenceFile);
     }
@@ -253,6 +268,14 @@ public class NewXMLPersistenceManager implements PersistenceManager{
     protected Node createNodeFromElement(Element fingerPrint){
         float x = Float.parseFloat(fingerPrint.getAttributeValue("x"));
         float y = Float.parseFloat(fingerPrint.getAttributeValue("y"));
-        return new Node(x,y,fingerPrint.getAttributeValue("name"),fingerPrint.getAttributeValue("searchName"),null);
+        Element neighbours = fingerPrint.getChild("neighbours");
+        Element neighbour = neighbours.getChild("neighbour");
+
+        List<String> neighbourStrings = new ArrayList<>();
+        for (int i=0; i<neighbour.getAttributes().size();i++){
+            String neighbourName = neighbour.getAttributeValue("name");
+            neighbourStrings.add(neighbourName);
+        }
+        return new Node(x,y,fingerPrint.getAttributeValue("name"),fingerPrint.getAttributeValue("searchName"),neighbourStrings);
     }
 }
