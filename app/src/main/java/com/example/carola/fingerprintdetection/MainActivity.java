@@ -18,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -39,7 +40,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -216,7 +220,10 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     private void makeAndDrawNode() {
 
         //add a node to xml file
-        Node test = new Node(x,y,String.valueOf(countNode),"bla", null);
+        Node neighbour = new Node(x,y,"2","bla", null);
+        List<Node> neigbours = new ArrayList<>();
+        neigbours.add(neighbour);
+        Node test = new Node(x,y,String.valueOf(countNode),"bla", neigbours);
         countNode++;
 
         if(positionManager != null){
@@ -253,53 +260,17 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     }
 
     private void initializePositioning() {
-        File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "positioningPersistenceHTWog6.xml");
-        //File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "og6Information.xml");
+        Calendar calender = Calendar.getInstance();
+        SimpleDateFormat strFormat = new SimpleDateFormat("yyyy-MM-dd HH");
+        String strDate = strFormat.format(calender.getTime());
+        //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "myHome2.xml");
+        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), strDate+" og6Information.xml");
 
+        findNodesFromJson();
 
-        String json = null;
-        try {
-            InputStream is = this.getAssets().open("og6InformationJson.txt");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            json = new String(buffer, "UTF-8");
-
-            JSONObject  jsonRootObject = new JSONObject(json);
-
-            //Get the instance of JSONArray that contains JSONObjects
-            JSONArray jsonArray = jsonRootObject.optJSONArray("nodePoints");
-
-            List<Node> actuallyNodes = new ArrayList<Node>();
-
-            //Iterate the jsonArray and print the info of JSONObjects
-            for(int i=0; i < jsonArray.length(); i++){
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-                String name = jsonObject.optString("name").toString();
-                String searchname = jsonObject.optString("searchName").toString();
-                float x = Float.parseFloat(jsonObject.optString("x").toString());
-                float y = Float.parseFloat(jsonObject.optString("y").toString());
-                actuallyNodes.add(new Node(x,y,name,searchname,null));
-            }
-
-            for(int i = 0; i<actuallyNodes.size(); i++){
-                drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
-            }
-
-            NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
-
-            listView.setAdapter(adapter);
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         try {
-            xmlPersistenceManager = new NewXMLPersistenceManager(file);
+            xmlPersistenceManager = new NewXMLPersistenceManager(informationFile);
             positionManager = new PositionManager(xmlPersistenceManager);
             Log.d("positionManager", "initialized");
 //            List<String> positions = positionManager.getMappedPositions();
@@ -313,10 +284,10 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 //                    drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
 //                }
 //
-//                NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
-//
-//                ListView listView = (ListView) findViewById(R.id.lv_nodes);
-//                listView.setAdapter(adapter);
+////                NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
+////
+////                ListView listView = (ListView) findViewById(R.id.lv_nodes);
+////                listView.setAdapter(adapter);
 //            }
         } catch (PositioningPersistenceException e) {
             e.printStackTrace();
@@ -359,6 +330,53 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             e.printStackTrace();
         }
         positionManager.registerPositionListener(this);
+    }
+
+    private void findNodesFromJson() {
+        String json = null;
+        try {
+            InputStream is = this.getAssets().open("og6InformationJson.txt");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+
+            JSONObject  jsonRootObject = new JSONObject(json);
+
+            //Get the instance of JSONArray that contains JSONObjects
+            JSONArray jsonArray = jsonRootObject.optJSONArray("nodePoints");
+
+            List<Node> actuallyNodes = new ArrayList<Node>();
+
+            //Iterate the jsonArray and print the info of JSONObjects
+            for(int i=0; i < jsonArray.length(); i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                String name = jsonObject.optString("name").toString();
+                String searchname = jsonObject.optString("searchName").toString();
+                float x = Float.parseFloat(jsonObject.optString("x").toString());
+                float y = Float.parseFloat(jsonObject.optString("y").toString());
+                ArrayList<String> neighbourStrings = new ArrayList<>();
+                for(int j = 0; j<jsonObject.getJSONArray("neighbours").length(); j++){
+                    neighbourStrings.add(jsonObject.getJSONArray("neighbours").get(j).toString());
+                }
+                actuallyNodes.add(new Node(x,y,name,searchname,neighbourStrings));
+            }
+
+            for(int i = 0; i<actuallyNodes.size(); i++){
+                drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
+            }
+
+            NodeAdapter adapter = new NodeAdapter(this, (ArrayList<Node>) actuallyNodes);
+
+            listView.setAdapter(adapter);
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
