@@ -36,13 +36,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -90,13 +93,11 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 
         countNode = 0;
 
-        if(!hasPermissions(MainActivity.this, permissions)){
+        if (!hasPermissions(MainActivity.this, permissions)) {
             ActivityCompat.requestPermissions(MainActivity.this, permissions, ASK_MULTIPLE_PERMISSION_REQUEST_CODE);
-        }
-        else {
+        } else {
             initializePositioning();
         }
-
 
         startScanButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -116,12 +117,11 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 
                 Node clickedNode = (Node) listView.getItemAtPosition(position);
-                if(positionManager != null){
+                if (positionManager != null) {
                     xmlPersistenceManager.addNodeData(clickedNode);
                     positionManager.map(clickedNode.name);
                     drawRecievedNode(clickedNode.x, clickedNode.y);
-                }
-                else {
+                } else {
                     initializePositioning();
                     return;
                 }
@@ -153,11 +153,9 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
                     x = event.getX();
                     y = event.getY();
 
-
-                    if(!hasPermissions(MainActivity.this, permissions)){
+                    if (!hasPermissions(MainActivity.this, permissions)) {
                         ActivityCompat.requestPermissions(MainActivity.this, permissions, ASK_MULTIPLE_PERMISSION_REQUEST_CODE);
-                    }
-                    else {
+                    } else {
                         //makeAndDrawNode();
                     }
 
@@ -220,24 +218,24 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     private void makeAndDrawNode() {
 
         //add a node to xml file
-        Node neighbour = new Node(x,y,"2","bla", null);
+        Node neighbour = new Node(x, y, "2", "bla", null);
         List<Node> neigbours = new ArrayList<>();
         neigbours.add(neighbour);
-        Node test = new Node(x,y,String.valueOf(countNode),"bla", neigbours);
+        Node test = new Node(x, y, String.valueOf(countNode), "bla", neigbours);
         countNode++;
 
-        if(positionManager != null){
+        if (positionManager != null) {
             xmlPersistenceManager.addNodeData(test);
             positionManager.map(test.name);
             drawNode(x, y);
-        }
-        else {
+        } else {
             initializePositioning();
             return;
         }
 
     }
-    private void drawNode(float x, float y){
+
+    private void drawNode(float x, float y) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         paint.setColor(Color.BLUE);
@@ -248,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         image.setImageBitmap(mutableBitmap);
     }
 
-    private void drawRecievedNode(float x, float y){
+    private void drawRecievedNode(float x, float y) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         paint.setColor(Color.RED);
@@ -264,10 +262,9 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         SimpleDateFormat strFormat = new SimpleDateFormat("yyyy-MM-dd HH");
         String strDate = strFormat.format(calender.getTime());
         //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "myHome2.xml");
-        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), strDate+" og6Information.xml");
+        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), strDate + " og6Information.xml");
 
         findNodesFromJson();
-
 
         try {
             xmlPersistenceManager = new NewXMLPersistenceManager(informationFile);
@@ -293,7 +290,11 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             e.printStackTrace();
         }
 
+
+
         List<String> keyWhiteList = new ArrayList<String>();
+
+        keyWhiteList = getMacAdresses();
         //weihiteList Julian
 //        keyWhiteList.add("88:03:55:0b:22:44".toLowerCase());
 //        keyWhiteList.add("bc:05:43:b4:3d:72".toLowerCase());
@@ -332,6 +333,36 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         positionManager.registerPositionListener(this);
     }
 
+
+    private List<String> getMacAdresses() {
+        List<String> macAddresses = new ArrayList<>();
+        try {
+            List<String> assetList = Arrays.asList(this.getAssets().list(""));
+            for (String fileName : assetList) {
+                if (fileName.toLowerCase().contains("macadresses")) {
+                    readMacAdresses(fileName, macAddresses);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return macAddresses;
+    }
+
+    private void readMacAdresses(String fileName, List<String> dest) throws IOException {
+        InputStream inputStream = this.getAssets().open(fileName);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = bufferedReader.readLine()) != null && line.length() != 0) {
+            if (!dest.contains(line.toLowerCase())) {
+                dest.add(line.toLowerCase());
+            }
+        }
+
+    }
+
     private void findNodesFromJson() {
         String json = null;
         try {
@@ -342,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             is.close();
             json = new String(buffer, "UTF-8");
 
-            JSONObject  jsonRootObject = new JSONObject(json);
+            JSONObject jsonRootObject = new JSONObject(json);
 
             //Get the instance of JSONArray that contains JSONObjects
             JSONArray jsonArray = jsonRootObject.optJSONArray("nodePoints");
@@ -350,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             List<Node> actuallyNodes = new ArrayList<Node>();
 
             //Iterate the jsonArray and print the info of JSONObjects
-            for(int i=0; i < jsonArray.length(); i++){
+            for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
                 String name = jsonObject.optString("name").toString();
@@ -358,13 +389,13 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
                 float x = Float.parseFloat(jsonObject.optString("x").toString());
                 float y = Float.parseFloat(jsonObject.optString("y").toString());
                 ArrayList<String> neighbourStrings = new ArrayList<>();
-                for(int j = 0; j<jsonObject.getJSONArray("neighbours").length(); j++){
+                for (int j = 0; j < jsonObject.getJSONArray("neighbours").length(); j++) {
                     neighbourStrings.add(jsonObject.getJSONArray("neighbours").get(j).toString());
                 }
-                actuallyNodes.add(new Node(x,y,name,searchname,neighbourStrings));
+                actuallyNodes.add(new Node(x, y, name, searchname, neighbourStrings));
             }
 
-            for(int i = 0; i<actuallyNodes.size(); i++){
+            for (int i = 0; i < actuallyNodes.size(); i++) {
                 drawNode(actuallyNodes.get(i).x, actuallyNodes.get(i).y);
             }
 
@@ -390,6 +421,6 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
     public void positionReceived(List<PositionInformation> list) {
         String positionName = list.get(0).getName();
         Node recievedNode = xmlPersistenceManager.getNodeData(positionName);
-        drawRecievedNode(recievedNode.x,recievedNode.y);
+        drawRecievedNode(recievedNode.x, recievedNode.y);
     }
 }
