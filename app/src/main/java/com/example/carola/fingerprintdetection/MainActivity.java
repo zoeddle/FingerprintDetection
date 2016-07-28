@@ -1,54 +1,49 @@
 package com.example.carola.fingerprintdetection;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import de.hadizadeh.positioning.controller.PositionListener;
 import de.hadizadeh.positioning.controller.PositionManager;
@@ -290,11 +285,9 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             e.printStackTrace();
         }
 
-
-
         List<String> keyWhiteList = new ArrayList<String>();
 
-        keyWhiteList = getMacAdresses();
+        keyWhiteList.addAll(getMacAdresses());
         //weihiteList Julian
 //        keyWhiteList.add("88:03:55:0b:22:44".toLowerCase());
 //        keyWhiteList.add("bc:05:43:b4:3d:72".toLowerCase());
@@ -339,8 +332,9 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         try {
             List<String> assetList = Arrays.asList(this.getAssets().list(""));
             for (String fileName : assetList) {
-                if (fileName.toLowerCase().contains("macadresses")) {
-                    readMacAdresses(fileName, macAddresses);
+                if (fileName.toLowerCase().contains("bssid")) {
+                    //readMacAdressesFormTxT(fileName, macAddresses);
+                    readMacAddressesFromXls(fileName, macAddresses);
                 }
             }
 
@@ -351,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         return macAddresses;
     }
 
-    private void readMacAdresses(String fileName, List<String> dest) throws IOException {
+    private void readMacAdressesFormTxT(String fileName, List<String> dest) throws IOException {
         InputStream inputStream = this.getAssets().open(fileName);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
@@ -361,6 +355,49 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             }
         }
 
+    }
+
+    private void readMacAddressesFromXls(String filename, List<String> dest) throws IOException {
+        InputStream inputStream = this.getAssets().open(filename);
+        POIFSFileSystem poifsFileSystem = new POIFSFileSystem(inputStream);
+        HSSFWorkbook hssfWorkbook = new HSSFWorkbook(poifsFileSystem);
+        HSSFSheet sheet = hssfWorkbook.getSheetAt(0);
+        HSSFRow row;
+        HSSFCell cell;
+
+        Iterator<Row> rowIterator = sheet.rowIterator();
+        //TODO Clean this up quick way to skip the heading row
+        rowIterator.next();
+
+        while (rowIterator.hasNext()) {
+            row = (HSSFRow) rowIterator.next();
+            Iterator<Cell> cellIterator = row.cellIterator();
+            while (cellIterator.hasNext()) {
+                cell = (HSSFCell) cellIterator.next();
+                if (cell.getColumnIndex() == 4) {
+                    String address = addSeparator(cell.toString());
+                    if (! address.equals("")){
+                        dest.add(address);
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    private String addSeparator(String macAddress) {
+
+        StringBuilder addressWithSeparator = new StringBuilder();
+
+        for (int i = 0; i < macAddress.length(); i++) {
+            if (i % 2 == 0 && i != 0) {
+                addressWithSeparator.append(":");
+            }
+            addressWithSeparator.append(macAddress.charAt(i));
+        }
+
+        return addressWithSeparator.toString();
     }
 
     private void findNodesFromJson() {
