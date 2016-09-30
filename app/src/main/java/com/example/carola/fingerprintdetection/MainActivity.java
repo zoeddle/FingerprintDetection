@@ -296,9 +296,9 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 //        keyWhiteList.add("e8:37:7a:1a:56:5b".toLowerCase());
 //        keyWhiteList.add("34:81:c4:c7:46:50".toLowerCase());
         //whiteList zuHause
-        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
-        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
-        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
+//        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
+//        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
+//        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
         //whiteList HTW
 //        keyWhiteList.add("00:19:07:c4:91:51".toLowerCase());
 //        keyWhiteList.add("00:19:07:97:63:81".toLowerCase());
