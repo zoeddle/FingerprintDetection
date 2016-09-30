@@ -67,11 +67,13 @@ public class NewXMLPersistenceManager implements PersistenceManager{
                     ((List)positionInformation.get(technologyName)).add(new PositionInformation(fingerPrint.getAttributeValue("name"), signalInformationData))) {
                     Element technology = (Element)i$1.next();
                     technologyName = technology.getAttributeValue("name");
+                    technologyName ="WIFI";
                     signalInformationData = new HashMap();
                     Iterator i$2 = technology.getChildren().iterator();
 
-                    while(i$2.hasNext()) {
-                        Element signalInformation = (Element)i$2.next();
+                    //in while Schleife war vorher i2
+                    while(i$1.hasNext()) {
+                        Element signalInformation = (Element)i$1.next();
                         signalInformationData.put(signalInformation.getAttributeValue("id"), new SignalInformation(Double.parseDouble(signalInformation.getValue())));
                     }
 

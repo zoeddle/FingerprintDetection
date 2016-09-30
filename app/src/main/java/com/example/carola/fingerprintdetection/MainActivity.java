@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 
         image = (ImageView) findViewById(R.id.i_floorPlan);
         bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
-        final Button startScanButton = (Button) findViewById(R.id.b_startScann);
-        final Button stoppScanButton = (Button) findViewById(R.id.b_stoppScan);
+//        final Button startScanButton = (Button) findViewById(R.id.b_startScann);
+//        final Button stoppScanButton = (Button) findViewById(R.id.b_stoppScan);
         listView = (ListView) findViewById(R.id.lv_nodes);
 
         mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
@@ -98,17 +98,18 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         }
 
 
-        startScanButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                positionManager.startPositioning(1000);
-            }
-        });
-
-        stoppScanButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                positionManager.stopPositioning();
-            }
-        });
+//        startScanButton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                positionManager.getMappedPositions();
+//                positionManager.startPositioning(1000);
+//            }
+//        });
+//
+//        stoppScanButton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                positionManager.stopPositioning();
+//            }
+//        });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -263,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         Calendar calender = Calendar.getInstance();
         SimpleDateFormat strFormat = new SimpleDateFormat("yyyy-MM-dd HH");
         String strDate = strFormat.format(calender.getTime());
-        //File file = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "myHome2.xml");
+        //File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "myHome.xml");
         File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), strDate+" og6Information.xml");
 
         findNodesFromJson();
@@ -302,9 +303,16 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 //        keyWhiteList.add("e8:37:7a:1a:56:5b".toLowerCase());
 //        keyWhiteList.add("34:81:c4:c7:46:50".toLowerCase());
         //whiteList zuHause
+//        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
+//        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
+//        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
+
         keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
+        keyWhiteList.add("1c:74:0d:64:80:7b".toLowerCase());
+        keyWhiteList.add("34:31:c4:0c:cf:7e".toLowerCase());
         keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
-        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
+        keyWhiteList.add("5c:dc:96:bc:39:80".toLowerCase());
+        keyWhiteList.add("a0:e4:cb:a5:41:a1".toLowerCase());
         //whiteList HTW
 //        keyWhiteList.add("00:19:07:c4:91:51".toLowerCase());
 //        keyWhiteList.add("00:19:07:97:63:81".toLowerCase());
@@ -336,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         String json = null;
         try {
             InputStream is = this.getAssets().open("og6InformationJson.txt");
+            //InputStream is = this.getAssets().open("myHome.txt");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -381,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 
 
     @Override
-    public void positionReceived(PositionInformation positionInformation) {
+         public void positionReceived(PositionInformation positionInformation) {
 //        Node recievedNode = xmlPersistenceManager.getNodeData(positionInformation.getName());
 //        drawRecievedNode(recievedNode.x,recievedNode.y);
     }
