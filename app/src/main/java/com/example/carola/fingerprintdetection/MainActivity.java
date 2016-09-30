@@ -333,8 +333,8 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             List<String> assetList = Arrays.asList(this.getAssets().list(""));
             for (String fileName : assetList) {
                 if (fileName.toLowerCase().contains("bssid")) {
-                    //readMacAdressesFormTxT(fileName, macAddresses);
-                    readMacAddressesFromXls(fileName, macAddresses);
+                    readMacAdressesFormTxT(fileName, macAddresses);
+                    //readMacAddressesFromXls(fileName, macAddresses);
                 }
             }
 
@@ -357,48 +357,48 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 
     }
 
-    private void readMacAddressesFromXls(String filename, List<String> dest) throws IOException {
-        InputStream inputStream = this.getAssets().open(filename);
-        POIFSFileSystem poifsFileSystem = new POIFSFileSystem(inputStream);
-        HSSFWorkbook hssfWorkbook = new HSSFWorkbook(poifsFileSystem);
-        HSSFSheet sheet = hssfWorkbook.getSheetAt(0);
-        HSSFRow row;
-        HSSFCell cell;
-
-        Iterator<Row> rowIterator = sheet.rowIterator();
-        //TODO Clean this up quick way to skip the heading row
-        rowIterator.next();
-
-        while (rowIterator.hasNext()) {
-            row = (HSSFRow) rowIterator.next();
-            Iterator<Cell> cellIterator = row.cellIterator();
-            while (cellIterator.hasNext()) {
-                cell = (HSSFCell) cellIterator.next();
-                if (cell.getColumnIndex() == 4) {
-                    String address = addSeparator(cell.toString());
-                    if (! address.equals("")){
-                        dest.add(address);
-                    }
-                }
-            }
-        }
-
-    }
-
-
-    private String addSeparator(String macAddress) {
-
-        StringBuilder addressWithSeparator = new StringBuilder();
-
-        for (int i = 0; i < macAddress.length(); i++) {
-            if (i % 2 == 0 && i != 0) {
-                addressWithSeparator.append(":");
-            }
-            addressWithSeparator.append(macAddress.charAt(i));
-        }
-
-        return addressWithSeparator.toString();
-    }
+//    private void readMacAddressesFromXls(String filename, List<String> dest) throws IOException {
+//        InputStream inputStream = this.getAssets().open(filename);
+//        POIFSFileSystem poifsFileSystem = new POIFSFileSystem(inputStream);
+//        HSSFWorkbook hssfWorkbook = new HSSFWorkbook(poifsFileSystem);
+//        HSSFSheet sheet = hssfWorkbook.getSheetAt(0);
+//        HSSFRow row;
+//        HSSFCell cell;
+//
+//        Iterator<Row> rowIterator = sheet.rowIterator();
+//        //TODO Clean this up quick way to skip the heading row
+//        rowIterator.next();
+//
+//        while (rowIterator.hasNext()) {
+//            row = (HSSFRow) rowIterator.next();
+//            Iterator<Cell> cellIterator = row.cellIterator();
+//            while (cellIterator.hasNext()) {
+//                cell = (HSSFCell) cellIterator.next();
+//                if (cell.getColumnIndex() == 4) {
+//                    String address = addSeparator(cell.toString());
+//                    if (! address.equals("")){
+//                        dest.add(address);
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
+//
+//
+//    private String addSeparator(String macAddress) {
+//
+//        StringBuilder addressWithSeparator = new StringBuilder();
+//
+//        for (int i = 0; i < macAddress.length(); i++) {
+//            if (i % 2 == 0 && i != 0) {
+//                addressWithSeparator.append(":");
+//            }
+//            addressWithSeparator.append(macAddress.charAt(i));
+//        }
+//
+//        return addressWithSeparator.toString();
+//    }
 
     private void findNodesFromJson() {
         String json = null;
