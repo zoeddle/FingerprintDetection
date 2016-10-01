@@ -36,13 +36,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -295,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         }
 
         List<String> keyWhiteList = new ArrayList<String>();
+        keyWhiteList.addAll(getMacAdresses());
         //weihiteList Julian
 //        keyWhiteList.add("88:03:55:0b:22:44".toLowerCase());
 //        keyWhiteList.add("bc:05:43:b4:3d:72".toLowerCase());
@@ -307,12 +311,12 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
 //        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
 //        keyWhiteList.add("00:1e:be:8c:d6:a0".toLowerCase());
 
-        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
-        keyWhiteList.add("1c:74:0d:64:80:7b".toLowerCase());
-        keyWhiteList.add("34:31:c4:0c:cf:7e".toLowerCase());
-        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
-        keyWhiteList.add("5c:dc:96:bc:39:80".toLowerCase());
-        keyWhiteList.add("a0:e4:cb:a5:41:a1".toLowerCase());
+//        keyWhiteList.add("58:8b:f3:50:da:b1".toLowerCase());
+//        keyWhiteList.add("1c:74:0d:64:80:7b".toLowerCase());
+//        keyWhiteList.add("34:31:c4:0c:cf:7e".toLowerCase());
+//        keyWhiteList.add("18:83:bf:d1:ff:72".toLowerCase());
+//        keyWhiteList.add("5c:dc:96:bc:39:80".toLowerCase());
+//        keyWhiteList.add("a0:e4:cb:a5:41:a1".toLowerCase());
         //whiteList HTW
 //        keyWhiteList.add("00:19:07:c4:91:51".toLowerCase());
 //        keyWhiteList.add("00:19:07:97:63:81".toLowerCase());
@@ -338,6 +342,36 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
             e.printStackTrace();
         }
         positionManager.registerPositionListener(this);
+    }
+
+    private List<String> getMacAdresses() {
+        List<String> macAddresses = new ArrayList<>();
+        try {
+            List<String> assetList = Arrays.asList(this.getAssets().list(""));
+            for (String fileName : assetList) {
+                if (fileName.toLowerCase().contains("bssid")) {
+                    readMacAdressesFormTxT(fileName, macAddresses);
+                    //readMacAddressesFromXls(fileName, macAddresses);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return macAddresses;
+    }
+
+    private void readMacAdressesFormTxT(String fileName, List<String> dest) throws IOException {
+        InputStream inputStream = this.getAssets().open(fileName);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = bufferedReader.readLine()) != null && line.length() != 0) {
+            if (!dest.contains(line.toLowerCase())) {
+                dest.add(line.toLowerCase());
+            }
+        }
+
     }
 
     private void findNodesFromJson() {
