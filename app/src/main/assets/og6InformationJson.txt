@@ -9,7 +9,7 @@
       },
       {
         "name": "1",
-        "searchName": "633",
+        "searchName": "Raum 633",
         "x": "441.1953",
         "y": "2587.75",
         "neighbours": ["3"]

@@ -47,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -268,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements PositionListener 
         SimpleDateFormat strFormat = new SimpleDateFormat("yyyy-MM-dd HH");
         String strDate = strFormat.format(calender.getTime());
         //File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "myHome.xml");
-        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), strDate+" og6Information.xml");
+        File informationFile = new File(Environment.getExternalStorageDirectory().getAbsoluteFile(), "og6Information.xml");
 
         findNodesFromJson();
 
